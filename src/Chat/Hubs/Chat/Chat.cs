@@ -8,9 +8,15 @@ namespace Chat.Hubs.Chat
 {
     public class Chat : Hub
     {
-        public void Send(string name, string message)
+        public void Join(string name)
         {
-            Clients.All.broadcastMessage(name, message);
+            Clients.Caller.id = new Guid();
+            Clients.Caller.Name = name;
+        }
+
+        public void Send(string message)
+        {
+            Clients.All.addNewMessageToPage(Clients.Caller.Name, message);
         }
     }
 }
