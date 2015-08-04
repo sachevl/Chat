@@ -16,7 +16,7 @@
                     <input type="text" id="inputName" class="form-control" placeholder="Name" required autofocus>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="joinButton">Join</button>
+                    <button type="button" class="btn btn-default btn-primary" id="joinButton">Join</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
@@ -55,7 +55,7 @@
                     <div class="input-group input-group-lg">
                         <input type="text" class="form-control input-lg" id="message">
                         <span class="input-group-btn">
-                            <button class="btn btn-default btn-lg" type="submit">Send</button>
+                            <button class="btn btn-default btn-lg" type="submit" id="sendMessage">Send</button>
                         </span>
                     </div><!-- /input-group -->
                 </div><!-- /.col-lg-6 -->
@@ -72,19 +72,20 @@
     <!--SignalR script to update the chat page and send messages.-->
     <script>
         $(function () {
-            function joinChat(name) {
-                var chat = $.connection.chat;
-                chat.server.join(name).done(function () {
-                    chat.client.addNewMessageToPage = function (name, message) {
-                        $('#discussion').append('<li><strong>' + htmlEncode(name)
-                            + '</strong>: ' + htmlEncode(message) + '</li>');
-                    };
+            var chat = $.connection.chat;
 
+            function joinChat(name) {
+                chat.server.join(name).done(function () {
                     $('#loginModal').modal('hide');
                     $('#message').focus();
                     $('#userName').text(name);
                 });
             }
+
+            chat.client.addNewMessageToPage = function (name, message) {
+                $('#main').append('<li><strong>' + htmlEncode(name)
+                    + '</strong>: ' + htmlEncode(message) + '</li>');
+            };
 
             $('#joinButton').click(function () {
                 joinChat($('#inputName').val());
@@ -92,8 +93,8 @@
 
             $.connection.hub.start().done(function () {
                 $('#loginModal').modal('show');
-                $('#sendmessage').click(function () {
-                    $.connection.chat.server.send($('#displayname').val(), $('#message').val());
+                $('#sendMessage').click(function () {
+                    $.connection.chat.server.send($('#message').val());
                     $('#message').val('').focus();
                 });
             });

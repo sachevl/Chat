@@ -10,7 +10,7 @@ namespace Chat.Hubs.Chat
     {
         public void Join(string name)
         {
-            Clients.Caller.id = new Guid();
+            Clients.Caller.Id = new Guid();
             Clients.Caller.Name = name;
         }
 
