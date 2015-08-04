@@ -1,22 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using Microsoft.AspNet.SignalR;
-
-namespace Chat.Hubs.Chat
+﻿namespace Chat.Hubs.Chat
 {
+    using System;
+    using System.Threading.Tasks;
+
+    using global::Chat.Core.Repositories;
+    using global::Chat.Model;
+
+    using Microsoft.AspNet.SignalR;
+
     public class Chat : Hub
     {
-        public void Join(string name)
+        private readonly IUserRepository userRepository;
+
+        public Chat(IUserRepository userRepository)
         {
-            Clients.Caller.Id = new Guid();
-            Clients.Caller.Name = name;
+            this.userRepository = userRepository;
+        }
+
+        public void Join(Guid id)
+        {
+            Clients.Caller.Id = id;
+            var user = this.userRepository.Get(id);
+            Clients.Caller.Name = user.Name;
+            this.userRepository.AssignConnectionId(Context.ConnectionId, id);
+            Clients.Others.joins(user);
         }
 
         public void Send(string message)
         {
             Clients.All.addNewMessageToPage(Clients.Caller.Name, message);
+        }
+
+        public override Task OnDisconnected(bool stopCalled)
+        {
+            var user = this.userRepository.RemoveByConnectionId(Context.ConnectionId);
+            return Clients.All.leaves(user.Id);
         }
     }
 }
