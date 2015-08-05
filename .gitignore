@@ -3,4 +3,6 @@
 *.suo
 *.user
 packages/*
-
+*.Cloud.config
+*.PublishSettings
+*.pubxml
