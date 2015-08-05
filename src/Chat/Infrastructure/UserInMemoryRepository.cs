@@ -17,9 +17,24 @@
             this.users.TryAdd(user.Id, user);
         }
 
-        public User Get(Guid id)
+        public User Get(Guid userId)
         {
-            return this.users[id];
+            return this.users[userId];
+        }
+
+        public User Get(string connectionId)
+        {
+            Guid userId;
+            if (this.connectionToUserMapping.TryGetValue(connectionId, out userId))
+            {
+                User user;
+                if (this.users.TryGetValue(userId, out user))
+                {
+                    return user;
+                }
+            }
+
+            throw new InvalidOperationException("Cannot find user with connection id" + connectionId);
         }
 
         public IEnumerable<User> GetAll()
@@ -39,7 +54,7 @@
                 }
             }
 
-            throw new InvalidOperationException("Cannot remove user with id " + connectionId);
+            throw new InvalidOperationException("Cannot remove user with connection id " + connectionId);
         }
 
         public void AssignConnectionId(string connectionId, Guid userId)

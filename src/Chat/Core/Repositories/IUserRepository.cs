@@ -9,7 +9,9 @@
     {
         void AddUser(User user);
 
-        User Get(Guid id);
+        User Get(Guid userId);
+
+        User Get(string connectionId);
 
         IEnumerable<User> GetAll();
 

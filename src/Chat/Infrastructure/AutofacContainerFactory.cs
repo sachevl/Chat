@@ -18,6 +18,8 @@
             builder.RegisterHubs(Assembly.GetExecutingAssembly());
 
             builder.RegisterType<UserInMemoryRepository>().As<IUserRepository>().SingleInstance();
+            builder.RegisterType<AzureTableStorageMessageRepository>().As<IMessageRepository>().InstancePerLifetimeScope();
+            builder.RegisterType<CloudTableFactory>().As<ICloudTableFactory>().SingleInstance();
 
             return builder.Build();
         }

@@ -4,17 +4,18 @@
     using System.Threading.Tasks;
 
     using global::Chat.Core.Repositories;
-    using global::Chat.Model;
 
     using Microsoft.AspNet.SignalR;
 
     public class Chat : Hub
     {
         private readonly IUserRepository userRepository;
+        private readonly IMessageRepository messageRepository;
 
-        public Chat(IUserRepository userRepository)
+        public Chat(IUserRepository userRepository, IMessageRepository messageRepository)
         {
             this.userRepository = userRepository;
+            this.messageRepository = messageRepository;
         }
 
         public void Join(Guid id)
@@ -26,9 +27,14 @@
             Clients.Others.joins(user);
         }
 
-        public void Send(string message)
+        public async Task Send(string message)
         {
-            Clients.All.addNewMessageToPage(Clients.Caller.Name, message);
+            if (string.IsNullOrEmpty(message)) return;
+
+            var user = this.userRepository.Get(Context.ConnectionId);
+
+            await this.messageRepository.Add(user.Id, user.Name, message);
+            await Clients.All.addNewMessageToPage(user.Name, message);
         }
 
         public override Task OnDisconnected(bool stopCalled)

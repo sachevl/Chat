@@ -18,6 +18,8 @@
 
         public IHttpActionResult PostJoin([FromBody]User user)
         {
+            if (string.IsNullOrEmpty(user.Name)) return BadRequest("User name should be specified");
+
             var userId = Guid.NewGuid();
             this.userRepository.AddUser(
                 new User
