@@ -3,53 +3,92 @@
         alert('error');
     });
 
-    var chat = $.connection.chat;
-    $('#loginModal').modal('show');
-
-    $('#joinForm').submit(function (event) {
-        event.preventDefault();
-        joinChat($('#inputName').val());
-    });
-
     function joinChat(name) {
         $.post('api/chat/join', { name: name }).done(function (userId) {
-            chat.client.addNewMessageToPage = function (name, message) {
-                $('#discussion').append('<li><strong>' + htmlEncode(name)
-                    + '</strong>: ' + htmlEncode(message) + '</li>');
-            };
+            var chatHub = $.connection.chat;
 
-            chat.client.leaves = function (userId) {
-                $('#user-' + userId).remove();
-            }
-
-            chat.client.joins = addUser;
+            chatHub.client.addNewMessageToPage = chat.discussionPresenter.addMessage;
+            chatHub.client.leaves = chat.usersPresenter.removeUser;
+            chatHub.client.joins = chat.usersPresenter.addUser;
 
             $.connection.hub.start().done(function () {
-                chat.server.join(userId).done(function () {
-                    $('#sendMessageForm').submit(function (event) {
-                        event.preventDefault();
-                        $.connection.chat.server.send($('#message').val());
-                        $('#message').val('').focus();
-                    });
-
-                    $('#loginModal').modal('hide');
-                    $('#message').focus();
-                    $('#userName').text(name);
-
-                    $.get('api/user').done(function(users) {
-                        users.forEach(addUser);
-                    });
-                });
+                chatHub.server.join(userId).done(chat.discussionPresenter.init);
             });
         });
     }
-});
 
-function addUser(user) {
-    $('#users').append('<li id="user-' + user.Id + '">' + htmlEncode(user.Name) + '</li>');
-}
+    chat.joinPresenter.showDialog(joinChat);
+});
 
 function htmlEncode(value) {
     var encodedValue = $('<div />').text(value).html();
     return encodedValue;
 }
+
+var chat = {};
+
+chat.joinPresenter = (function() {
+    function showJoinDialog(f) {
+        $('#joinModal').modal('show');
+
+        $('#joinForm').submit(function (event) {
+            event.preventDefault();
+            f($('#inputName').val());
+        });
+    }
+
+    function hideJoinDialog() {
+        $('#joinModal').modal('hide');
+    }
+
+    return {
+        showDialog: showJoinDialog,
+        hideDialog: hideJoinDialog
+    };
+})();
+
+chat.usersPresenter = (function() {
+    function addUser(user) {
+        $('#users').append('<li id="user-' + user.Id + '">' + htmlEncode(user.Name) + '</li>');
+    }
+
+    function removeUser(userId) {
+        $('#user-' + userId).remove();
+    }
+
+    function addUsers(users) {
+        users.forEach(addUser);
+    }
+
+    return {
+        addUsers: addUsers,
+        addUser: addUser,
+        removeUser: removeUser
+    };
+})();
+
+chat.discussionPresenter = (function() {
+    function init() {
+        $('#sendMessageForm').submit(function (event) {
+            event.preventDefault();
+            $.connection.chat.server.send($('#message').val());
+            $('#message').val('').focus();
+        });
+
+        chat.joinPresenter.hideDialog();
+        $('#message').focus();
+        $('#userName').text(name);
+
+        $.get('api/user').done(chat.usersPresenter.addUsers);
+    }
+
+    function addMessage (name, message) {
+        $('#discussion').append('<li><strong>' + htmlEncode(name)
+            + '</strong>: ' + htmlEncode(message) + '</li>');
+    }
+
+    return {
+        init: init,
+        addMessage: addMessage
+    };
+})();
