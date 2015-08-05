@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
 
-    using Chat.Model;
+    using Chat.Core.Model;
 
     public interface IUserRepository
     {

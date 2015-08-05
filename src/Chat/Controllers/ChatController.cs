@@ -4,8 +4,8 @@
     using System.Linq;
     using System.Web.Http;
 
+    using Chat.Core.Model;
     using Chat.Core.Repositories;
-    using Chat.Model;
 
     public class ChatController : ApiController
     {

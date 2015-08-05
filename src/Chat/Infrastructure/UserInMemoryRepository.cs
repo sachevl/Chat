@@ -4,8 +4,8 @@
     using System.Collections.Concurrent;
     using System.Collections.Generic;
 
+    using Chat.Core.Model;
     using Chat.Core.Repositories;
-    using Chat.Model;
 
     public class UserInMemoryRepository : IUserRepository
     {

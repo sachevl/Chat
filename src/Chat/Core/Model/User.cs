@@ -1,4 +1,4 @@
-﻿namespace Chat.Model
+﻿namespace Chat.Core.Model
 {
     using System;
 
